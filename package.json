@@ -1,0 +1,25 @@
+{
+  "name": "reversi",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack-dev-server",
+    "start": "webpack-dev-server --open --mode development"
+  },
+  "devDependencies": {
+    "@types/dat.gui": "^0.7.5",
+    "css-loader": "^4.2.1",
+    "html-webpack-plugin": "^4.3.0",
+    "ts-loader": "^8.0.2",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "dat.gui": "^0.7.7",
+    "style-loader": "^1.2.1"
+  }
+}
