@@ -573,14 +573,7 @@ class Board {
                 tdNext.className = 'w info';
                 tdNext.innerHTML = '●';
             } else {
-                const score = evalScore(this.board, this.yourStone);
-                if (score == 0) {
-                    tdNext.innerHTML = 'Draw';
-                } else if (score > 0) {
-                    tdNext.innerHTML = 'Win';
-                } else {
-                    tdNext.innerHTML = 'Lose';
-                }
+                tdNext.innerHTML = 'Game End';
                 tdNext.className = 'info';
             }
             tr.appendChild(tdNext);
@@ -744,25 +737,30 @@ class Board {
 
                             this.updateBoard(false, false);
 
-                            setTimeout(() => {
-                                const ns = nextStone(this.stone);
-                                if (this.npcEnabled) {
-                                    npc(this.board, ns);
-                                    if (!hasCandidates(this.board, this.stone)) {
-                                        this.stone = E;
-                                        alertGameResult(this.board, yourStone);
+                            if (!hasCandidates(this.board, ns)
+                                    && !hasCandidates(this.board, this.stone) ) {
+                                alertGameResult(this.board, yourStone);
+                            } else {
+                                setTimeout(() => {
+                                    const ns = nextStone(this.stone);
+                                    if (this.npcEnabled) {
+                                        npc(this.board, ns);
+                                        if (!hasCandidates(this.board, this.stone)) {
+                                            this.stone = E;
+                                            alertGameResult(this.board, yourStone);
+                                        }
+                                    } else {
+                                        if (hasCandidates(this.board, ns)) {
+                                            this.stone = ns;
+                                        } else if (!hasCandidates(this.board, this.stone)) {
+                                            this.stone = E;
+                                        }
                                     }
-                                } else {
-                                    if (hasCandidates(this.board, ns)) {
-                                        this.stone = ns;
-                                    } else if (!hasCandidates(this.board, this.stone)) {
-                                        this.stone = E;
-                                        alertGameResult(this.board, yourStone);
-                                    }
-                                }
+    
+                                    this.updateBoard(true, this.scoreVisible);
+                                }, 10);
+                            }
 
-                                this.updateBoard(true, this.scoreVisible);
-                            }, 10);
                         }
                         td.appendChild(button);
                     }
