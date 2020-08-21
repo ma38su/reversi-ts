@@ -355,12 +355,19 @@ class Board {
     scoreVisible: boolean = false;
 
     stone: Stone;
-    readonly board: Stone[][];
+    board: Stone[][];
 
     div: HTMLDivElement;
 
     constructor(div: HTMLDivElement) {
         this.div = div;
+
+        this.board = this.newBoard();
+        this.stone = B;
+        this.updateBoard(true, this.scoreVisible);
+    }
+
+    newBoard() {
         const board: Stone[][] = new Array(8);
         for (let i = 0; i < board.length; ++i) {
             board[i] = new Array(8).fill(E);
@@ -369,11 +376,7 @@ class Board {
         board[3][4] = W;
         board[4][3] = W;
         board[4][4] = B;
-        this.board = board;
-
-        this.stone = B;
-
-        this.updateBoard(true, this.scoreVisible);
+        return board;
     }
 
     stones(stone: Stone) {
@@ -395,6 +398,133 @@ class Board {
         div.appendChild(this.createBoardDom(buttonEnabled, scoreVisible));
         div.append(this.createInfoDom());
         div.append(this.createScoreDom());
+        div.append(this.controllerDom());
+    }
+
+    controllerDom() {
+
+        const table = document.createElement('table');
+        {
+            const tr = document.createElement('tr');
+
+            const label = document.createElement('label');
+            label.innerHTML = 'NPC';
+            label.htmlFor = 'npc-check'; 
+
+            const th = document.createElement('th');
+            th.appendChild(label);
+            tr.appendChild(th);
+
+            const checkbox = document.createElement('input');
+            checkbox.id = 'npc-check';
+            checkbox.type = 'checkbox';
+            checkbox.onchange = () => {
+                if (checkbox.checked) {
+                    this.npcEnabled = true;
+                } else {
+                    this.npcEnabled = false;
+                }
+            };
+            checkbox.checked = this.npcEnabled;
+            checkbox.className = 'control';
+
+            const td = document.createElement('td');
+            td.appendChild(checkbox);
+            tr.appendChild(td);
+            table.appendChild(tr);
+        }
+        {
+            const tr = document.createElement('tr');
+
+            const label = document.createElement('label');
+            label.innerHTML = 'Score';
+            label.htmlFor = 'score-check'; 
+
+            const th = document.createElement('th');
+            th.appendChild(label);
+            tr.appendChild(th);
+
+            const checkbox = document.createElement('input');
+            checkbox.id = 'score-check'
+            checkbox.type = 'checkbox';
+            checkbox.onchange = () => {
+                if (checkbox.checked) {
+                    this.scoreVisible = true;
+                } else {
+                    this.scoreVisible = false;
+                }
+                this.updateBoard(true, this.scoreVisible);
+            };
+            checkbox.checked = this.scoreVisible;
+            checkbox.className = 'control';
+
+            const td = document.createElement('td');
+            td.appendChild(checkbox);
+            tr.appendChild(td);
+            table.appendChild(tr);
+        }
+        {
+            const tr = document.createElement('tr');
+
+            const label = document.createElement('label');
+            label.innerHTML = 'Depth';
+            label.htmlFor = 'depth-input'; 
+
+            const th = document.createElement('th');
+            th.appendChild(label);
+            tr.appendChild(th);
+
+            const select = document.createElement('select');
+            select.id = 'depth'
+            for (let depth of [1, 2, 3, 4, 5, 6, 7, 8]) {
+                const option = document.createElement('option');
+                option.innerHTML = depth.toString();
+                option.value = depth.toString();
+                select.appendChild(option);
+                if (this.searchDepth == depth) {
+                    option.selected = true;
+                }
+            }
+            select.onchange = () => {
+                for (const opt of select.selectedOptions) {
+                    this.searchDepth = parseInt(opt.value);
+                    break;
+                }
+                console.log('search-depth: ', this.searchDepth);
+                if (this.scoreVisible) {
+                    this.updateBoard(true, this.scoreVisible);
+                }
+            };
+            select.className = 'control';
+
+            const td = document.createElement('td');
+            td.appendChild(select);
+            tr.appendChild(td);
+            table.appendChild(tr);
+        }
+        {
+            const tr = document.createElement('tr');
+
+            const th = document.createElement('th');
+            tr.appendChild(th);
+
+            const buttonReset = document.createElement('input');
+            buttonReset.type = 'button';
+            buttonReset.value = 'Reset';
+            buttonReset.onclick = () => {
+                this.board = this.newBoard();
+                this.stone = B;
+                this.updateBoard(true, this.scoreVisible);
+            };
+            buttonReset.className = 'control';
+
+            const td = document.createElement('td');
+            td.appendChild(buttonReset);
+            tr.appendChild(td);
+            table.appendChild(tr);
+        }
+
+        return table;
     }
 
     createInfoDom() {

@@ -5,12 +5,14 @@ body {
 }
 
 input {
-    background-color: green;
-    color: green;
+    vertical-align: middle;
+}
+
+.control {
+    background-color: #CCC;
+    color: black;
     border: solid 0;
-    font-size: 15pt;
-    width: 100%;
-    height: 100%;
+    font-size: 10pt;
     vertical-align: middle;
 }
 
@@ -28,22 +30,51 @@ input {
 
 .candidate {
     background-color: #0C0;
+    border: solid 0;
+    font-size: 15pt;
+    color: green;
+    width: 100%;
+    height: 100%;
 }
 
 .candidate-b {
+    border: solid 0;
+    font-size: 15pt;
+    background-color: #0C0;
+    width: 100%;
+    height: 100%;
     color: #222;
 }
 .candidate-w {
+    border: solid 0;
+    font-size: 15pt;
+    background-color: #0C0;
+    width: 100%;
+    height: 100%;
     color: #DDD;
 }
 
 .best-candidate-b {
+    border: solid 0;
+    font-size: 15pt;
+    background-color: #0B0;
+    width: 100%;
+    height: 100%;
     color: #000;
     font-weight: bold;
 }
 .best-candidate-w {
+    border: solid 0;
+    font-size: 15pt;
+    background-color: #0B0;
+    width: 100%;
+    height: 100%;
     color: #fff;
     font-weight: bold;
+}
+
+ul {
+    list-style-type: none;
 }
 
 .score {
