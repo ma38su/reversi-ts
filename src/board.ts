@@ -327,7 +327,7 @@ function bestCandidates(board: Stone[][], stone: Stone, depth: number) {
 function npc(board: Stone[][], stone: Stone) {
     const ns = nextStone(stone);
     if (!hasCandidates(board, stone)) {
-        alert('npc skip');
+        alert('NPC must pass.');
     }
     while (hasCandidates(board, stone)) {
         const ij = bestCandidates(board, stone, 5);
@@ -344,7 +344,18 @@ function npc(board: Stone[][], stone: Stone) {
         if (hasCandidates(board, ns)) {
             break;
         }
-        alert('pass');
+        alert('You must pass.');
+    }
+}
+
+function alertGameResult(board: Stone[][], stone: Stone) {
+    const score = evalScore(board, stone);
+    if (score == 0) {
+        alert("Draw");
+    } else if (score > 0) {
+        alert("Win");
+    } else {
+        alert("Lose");
     }
 }
 
@@ -560,7 +571,14 @@ class Board {
                 tdNext.className = 'w info';
                 tdNext.innerHTML = '●';
             } else {
-                tdNext.innerHTML = 'Game End';
+                const score = evalScore(this.board, this.stone);
+                if (score == 0) {
+                    tdNext.innerHTML = 'Draw';
+                } else if (score > 0) {
+                    tdNext.innerHTML = 'Win';
+                } else {
+                    tdNext.innerHTML = 'Lose';
+                }
                 tdNext.className = 'info';
             }
             tr.appendChild(tdNext);
@@ -729,12 +747,14 @@ class Board {
                                     npc(this.board, ns);
                                     if (!hasCandidates(this.board, this.stone)) {
                                         this.stone = E;
+                                        alertGameResult(this.board, stone);
                                     }
                                 } else {
                                     if (hasCandidates(this.board, ns)) {
                                         this.stone = ns;
                                     } else if (!hasCandidates(this.board, this.stone)) {
                                         this.stone = E;
+                                        alertGameResult(this.board, stone);
                                     }
                                 }
 

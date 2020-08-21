@@ -18,20 +18,20 @@ input {
 
 .b {
     color: #000;
-    font-size: 20pt;
+    font-size: 16pt;
     text-align: center;
 }
 
 .w {
     color: #fff;
-    font-size: 20pt;
+    font-size: 16pt;
     text-align: center;
 }
 
 .candidate {
     background-color: #0C0;
     border: solid 0;
-    font-size: 15pt;
+    font-size: 12pt;
     color: green;
     width: 100%;
     height: 100%;
@@ -39,7 +39,7 @@ input {
 
 .candidate-b {
     border: solid 0;
-    font-size: 15pt;
+    font-size: 12pt;
     background-color: #0C0;
     width: 100%;
     height: 100%;
@@ -47,7 +47,7 @@ input {
 }
 .candidate-w {
     border: solid 0;
-    font-size: 15pt;
+    font-size: 12pt;
     background-color: #0C0;
     width: 100%;
     height: 100%;
@@ -56,7 +56,7 @@ input {
 
 .best-candidate-b {
     border: solid 0;
-    font-size: 15pt;
+    font-size: 12pt;
     background-color: #0B0;
     width: 100%;
     height: 100%;
@@ -65,7 +65,7 @@ input {
 }
 .best-candidate-w {
     border: solid 0;
-    font-size: 15pt;
+    font-size: 12pt;
     background-color: #0B0;
     width: 100%;
     height: 100%;
@@ -101,8 +101,8 @@ td.board {
     height: 5;
     padding: 0px;
     margin: 1px;
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     background-color: green;
     border: 1px solid #bbb;
     text-align: center;
@@ -113,7 +113,6 @@ th.score, td.score {
     font-size: 10pt;
     text-align: right;
 }
-
 
 th.info, td.info {
     width: 75px;
