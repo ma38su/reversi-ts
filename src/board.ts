@@ -362,7 +362,7 @@ function alertGameResult(board: Stone[][], stone: Stone) {
 class Board {
 
     npcEnabled: boolean = true;
-    searchDepth: number = 7;
+    searchDepth: number = 5;
     scoreVisible: boolean = false;
 
     stone: Stone;
