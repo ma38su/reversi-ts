@@ -11,6 +11,7 @@ input {
     font-size: 15pt;
     width: 100%;
     height: 100%;
+    vertical-align: middle;
 }
 
 .b {
@@ -23,6 +24,10 @@ input {
     color: #fff;
     font-size: 20pt;
     text-align: center;
+}
+
+.candidate {
+    background-color: #0C0;
 }
 
 .candidate-b {
