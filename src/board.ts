@@ -361,7 +361,9 @@ function alertGameResult(board: Stone[][], stone: Stone) {
 
 class Board {
 
+    yourStone: Stone = B;
     npcEnabled: boolean = true;
+
     searchDepth: number = 5;
     scoreVisible: boolean = false;
 
@@ -571,7 +573,7 @@ class Board {
                 tdNext.className = 'w info';
                 tdNext.innerHTML = '●';
             } else {
-                const score = evalScore(this.board, this.stone);
+                const score = evalScore(this.board, this.yourStone);
                 if (score == 0) {
                     tdNext.innerHTML = 'Draw';
                 } else if (score > 0) {
@@ -665,6 +667,7 @@ class Board {
     }
 
     createBoardDom(buttonEnabled: boolean, scoreVisible: boolean) {
+        const yourStone = this.yourStone;
         const table = document.createElement("table");
         table.className = 'board';
     
@@ -747,19 +750,19 @@ class Board {
                                     npc(this.board, ns);
                                     if (!hasCandidates(this.board, this.stone)) {
                                         this.stone = E;
-                                        alertGameResult(this.board, stone);
+                                        alertGameResult(this.board, yourStone);
                                     }
                                 } else {
                                     if (hasCandidates(this.board, ns)) {
                                         this.stone = ns;
                                     } else if (!hasCandidates(this.board, this.stone)) {
                                         this.stone = E;
-                                        alertGameResult(this.board, stone);
+                                        alertGameResult(this.board, yourStone);
                                     }
                                 }
 
                                 this.updateBoard(true, this.scoreVisible);
-                            }, 100);
+                            }, 10);
                         }
                         td.appendChild(button);
                     }
@@ -767,7 +770,6 @@ class Board {
                 tr.appendChild(td);
             }
         }
-        //alert("search: "+ totalCount);
         return table;
     }
 }
