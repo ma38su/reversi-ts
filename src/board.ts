@@ -381,7 +381,7 @@ function npc(board: Stone[][], stone: Stone) {
     if (!hasCandidates(board, stone)) {
         alert('NPC must pass.');
     }
-    while (hasCandidates(board, stone)) {
+    while (true) {
         const ij = bestCandidates(board, stone, 5);
         if (!ij) {
             alert("illegal state 1");
@@ -393,7 +393,7 @@ function npc(board: Stone[][], stone: Stone) {
         if (diff1 <= 0) {
             alert("illegal state 2");
         }
-        if (hasCandidates(board, ns)) {
+        if (hasCandidates(board, ns) || !hasCandidates(board, stone)) {
             break;
         }
         alert('You must pass.');
@@ -401,14 +401,16 @@ function npc(board: Stone[][], stone: Stone) {
 }
 
 function alertGameResult(board: Stone[][], stone: Stone) {
-    const score = evalScore(board, stone);
-    if (score == 0) {
-        alert("Draw");
-    } else if (score > 0) {
-        alert("Win");
-    } else {
-        alert("Lose");
-    }
+    setTimeout(() => {
+        const score = evalScore(board, stone);
+        if (score == 0) {
+            alert("Draw");
+        } else if (score > 0) {
+            alert("Win");
+        } else {
+            alert("Lose");
+        }
+    }, 100);
 }
 
 class Board {
@@ -615,6 +617,12 @@ class Board {
         const wStones = this.stones(W);
 
         {
+            if (this.stone !== E
+                    && !hasCandidates(this.board, this.stone)
+                    && !hasCandidates(this.board, nextStone(this.stone))) {
+                this.stone = E;
+            }
+
             const tr = document.createElement("tr");
 
             const tdNext = document.createElement('td');
@@ -789,30 +797,32 @@ class Board {
 
                             this.updateBoard(false, false);
 
-                            if (!hasCandidates(this.board, ns)
-                                    && !hasCandidates(this.board, this.stone) ) {
+                            const ns = nextStone(this.stone);
+                            if (!hasCandidates(this.board, this.stone)
+                                    && !hasCandidates(this.board, ns) ) {
+                                this.stone = E;
                                 alertGameResult(this.board, yourStone);
-                            } else {
-                                setTimeout(() => {
-                                    const ns = nextStone(this.stone);
-                                    if (this.npcEnabled) {
-                                        npc(this.board, ns);
-                                        this.updateBoard(true, this.scoreVisible);
-                                        if (!hasCandidates(this.board, this.stone)) {
-                                            this.stone = E;
-                                            alertGameResult(this.board, yourStone);
-                                        }
-                                    } else {
-                                        if (hasCandidates(this.board, ns)) {
-                                            this.stone = ns;
-                                        } else if (!hasCandidates(this.board, this.stone)) {
-                                            this.stone = E;
-                                        }
-                                        this.updateBoard(true, this.scoreVisible);
-                                    }
-                                }, 10);
+                                return;
                             }
 
+                            this.updateBoard(false, false);
+
+                            setTimeout(() => {
+                                if (this.npcEnabled) {
+                                    npc(this.board, ns);
+                                    if (!hasCandidates(this.board, this.stone)) {
+                                        this.stone = E;
+                                        alertGameResult(this.board, yourStone);
+                                    }
+                                } else {
+                                    if (hasCandidates(this.board, ns)) {
+                                        this.stone = ns;
+                                    } else if (!hasCandidates(this.board, this.stone)) {
+                                        this.stone = E;
+                                    }
+                                }
+                                this.updateBoard(true, this.scoreVisible);
+                            }, 10);
                         }
                         td.appendChild(button);
                     }
