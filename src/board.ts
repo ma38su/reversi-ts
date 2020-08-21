@@ -380,6 +380,7 @@ function npc(board: Stone[][], stone: Stone) {
     const ns = nextStone(stone);
     if (!hasCandidates(board, stone)) {
         alert('NPC must pass.');
+        return;
     }
     while (true) {
         const ij = bestCandidates(board, stone, 5);
