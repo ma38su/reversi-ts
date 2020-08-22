@@ -29,7 +29,7 @@ input {
 }
 
 .candidate {
-    background-color: #0A0;
+    background-color: #090;
     border: solid 0;
     font-size: 12pt;
     color: green;
@@ -40,7 +40,7 @@ input {
 .candidate-b {
     border: solid 0;
     font-size: 12pt;
-    background-color: #0A0;
+    background-color: #090;
     width: 100%;
     height: 100%;
     color: #222;
@@ -48,7 +48,7 @@ input {
 .candidate-w {
     border: solid 0;
     font-size: 12pt;
-    background-color: #0A0;
+    background-color: #090;
     width: 100%;
     height: 100%;
     color: #DDD;
@@ -57,7 +57,7 @@ input {
 .best-candidate-b {
     border: solid 0;
     font-size: 12pt;
-    background-color: #0C0;
+    background-color: #0B0;
     width: 100%;
     height: 100%;
     color: #000;
@@ -66,7 +66,7 @@ input {
 .best-candidate-w {
     border: solid 0;
     font-size: 12pt;
-    background-color: #0C0;
+    background-color: #0B0;
     width: 100%;
     height: 100%;
     color: #fff;
