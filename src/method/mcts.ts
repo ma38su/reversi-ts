@@ -1,6 +1,6 @@
 import {
     MIN_SCORE, MAX_SCORE,
-    Stone, Candidate, 
+    Board, Stone, Candidate, 
     cloneBoard, nextStone, putStone, hasCandidates, evalScore
 } from '../board';
 
