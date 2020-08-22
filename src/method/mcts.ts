@@ -1,63 +1,140 @@
 import {
     MIN_SCORE, MAX_SCORE,
     Board, Stone, Candidate, 
-    cloneBoard, nextStone, putStone, hasCandidates, evalScore
+    scanCandidates,
+    cloneBoard, reverse, putStone, hasCandidates, evalScore
 } from '../board';
 
-interface UCB1 {
-    x: number; // average rewards
-    n: number; // trials
-}
+import * as AlphaBeta from './alphabeta';
 
-function evalUcb1(val: UCB1, nj: number) {
-    const n = val.n;
-    const x = val.x / n;
-    return x + Math.sqrt(2 * Math.log(n) / nj);
-}
-
-function ucb1(board: Board, stone: Stone) {
-    const candidates: [[number, number], UCB1][] = [];
-    let nextBoard = cloneBoard(board);
-    for (let i = 0; i < 8; ++i) {
-        for (let j = 0; j < 8; ++j) {
-            const diff = putStone(nextBoard, stone, i, j);
-            if (diff <= 0) continue;
-            const ucb: UCB1 = {x: 0, n: 0};
-            candidates.push([[i, j], ucb]);
-            nextBoard = cloneBoard(board);
-        }
-    }
-
-    choice(board, stone, candidates, 0);
-
-    let nj = 1;
-    let choiceIndex = -1;
-    let maxScore = -Number.MAX_SAFE_INTEGER;
-
-    while (nj < 100) {
-        for (let i = 0; i < candidates.length; ++i) {
-            const [ij, ucb] = candidates[i];
-            const score = evalUcb1(ucb, nj);
-            if (maxScore < score) {
-                maxScore = score;
-                choiceIndex = i;
-            }
-        }
-        ++nj;
-        choice(board, stone, candidates, choiceIndex);
-    }
-    const list: Candidate[] = [];
-    return list;
-}
-
-function choice(board: Board, stone: Stone, candidates: [[number, number], UCB1][], i: number) {
-    const [ij, ucb] = candidates[i];
-
-    const score = playout(board, stone);
-    ++ucb.n;
-    ucb.x += score;
+function evalUcb1(node: GameNode, n: number) {
+    const x = node.score;
+    const nj = node.n;
+    return x / n + Math.sqrt(2 * Math.log2(n) / nj);
 }
 
 function playout(board: Board, stone: Stone) {
-    return evalScore(board, stone);
+    let candidates = scanCandidates(board, stone);
+    while (candidates.length > 0) {
+        const index = Math.floor(candidates.length * Math.random());
+        
+        const [xy] = candidates[index];
+        const [x, y] = xy;
+
+        const diff = putStone(board, stone, x, y);
+        if (diff <= 0) throw new Error();
+
+        stone = reverse(stone);
+        candidates = scanCandidates(board, stone);
+        if (candidates.length > 0) continue;
+
+        stone = reverse(stone);
+        candidates = scanCandidates(board, stone);
+    }
 }
+
+function choice(board: Board, stone: Stone, candidates: Candidate[], i: number) {
+    const candidate = candidates[i];
+    const [x, y] = candidate[0];
+
+    let nextBoard = cloneBoard(board);
+    const diff = putStone(nextBoard, stone, x, y);
+    if (diff <= 0) throw new Error();
+
+    playout(nextBoard, stone);
+    const score = evalScore(nextBoard, stone);
+
+    candidate[1] += score;
+    ++candidate[2];
+}
+
+interface GameNode {
+    board: Board;
+    nodes: GameNode[];
+    x: number,
+    y: number,
+    score: number;
+    n: number;
+}
+
+function gameNode(board: Board, stone: Stone) {
+    const candidates = scanCandidates(board, stone);
+
+    const nodes: GameNode[] = [];
+    for (const candidate of candidates) {
+        const [x, y] = candidate[0];
+        let nextBoard = cloneBoard(board);
+        const diff = putStone(nextBoard, stone, x, y);
+        if (diff <= 0) throw new Error();
+
+        const playBoard = cloneBoard(nextBoard);
+        playout(playBoard, stone);
+        const score = evalScore(nextBoard, stone);
+
+        nodes.push({
+            board: nextBoard,
+            nodes: [],
+            x: x,
+            y: y,
+            score: score,
+            n: 1,
+        });
+    }
+    return nodes;
+}
+
+function choiceNode(nodes: GameNode[], stone: Stone, n: number) {
+    const footprints = [];
+    const threshold = 10;
+    while (nodes.length > 0) {
+        let maxScore = Number.NEGATIVE_INFINITY;
+        let index = -1;
+        for (let i = 0; i < nodes.length; ++i) {
+            const score = evalUcb1(nodes[i], n);
+            if (maxScore < score) {
+                maxScore = score;
+                index = i;
+            }
+        }
+        if (index < 0) throw new Error();
+        const node = nodes[index];
+        footprints.push(node);
+
+        stone = reverse(stone);
+
+        nodes = node.nodes;
+        if (nodes.length == 0 && node.n > threshold) {
+            node.nodes = gameNode(node.board, stone);
+            nodes = node.nodes;
+        }
+    }
+
+    const node = footprints[footprints.length - 1];
+
+    const playBoard = cloneBoard(node.board);
+    playout(playBoard, stone);
+    const score = evalScore(playBoard, stone);
+    for (const n of footprints) {
+        n.score += score;
+        n.n++;
+    }
+}
+
+function candidateList(board: Board, stone: Stone): Candidate[] {
+    const nodes = gameNode(board, stone);
+
+    let n = nodes.length;
+    for (let j = 0; j < 10000; ++j) {
+        choiceNode(nodes, stone, n);
+        ++n;
+    }
+
+    const candidates: Candidate[] = [];
+    for (const node of nodes) {
+        const ucb1 = evalUcb1(node, n);
+        candidates.push([[node.x, node.y], ucb1, n]);
+    }
+    return candidates;
+}
+
+export { candidateList };

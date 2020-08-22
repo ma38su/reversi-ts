@@ -1,11 +1,11 @@
 import {
     MIN_SCORE, MAX_SCORE,
     Board, Stone, Candidate, 
-    cloneBoard, nextStone, putStone, hasCandidates, evalScore
+    cloneBoard, reverse, putStone, hasCandidates, evalScore
 } from '../board';
 
 function candidateList(board: Board, stone: Stone, depth: number): Candidate[] {
-    const ns = nextStone(stone);
+    const rs = reverse(stone);
     const list: Candidate[] = [];
     let nextBoard = cloneBoard(board);
     for (let i = 0; i < 8; ++i) {
@@ -23,7 +23,7 @@ function candidateList(board: Board, stone: Stone, depth: number): Candidate[] {
                     const [score2, n2] = maxCandidates(nextBoard, stone, depth - 1, MIN_SCORE);
                     if (score2 > MIN_SCORE) {
                         list.push([[i, j], score2, n2]);
-                    } else if (!hasCandidates(nextBoard, stone) && !hasCandidates(nextBoard, ns)) {
+                    } else if (!hasCandidates(nextBoard, stone) && !hasCandidates(nextBoard, rs)) {
                         list.push([[i, j], evalScore(nextBoard, stone), 1]);
                     }
                 }
@@ -35,7 +35,7 @@ function candidateList(board: Board, stone: Stone, depth: number): Candidate[] {
 }
 
 function maxCandidates(board: Board, stone: Stone, depth: number, upper: number): [number, number] {
-    const ns = nextStone(stone);
+    const rs = reverse(stone);
     let count = 0;
     let maxScore = MIN_SCORE;
     let nextBoard = cloneBoard(board);
@@ -66,7 +66,7 @@ function maxCandidates(board: Board, stone: Stone, depth: number, upper: number)
                         return [score2, count];
                     if (score2 > MIN_SCORE) {
                         maxScore = Math.max(maxScore, score2);
-                    } else if (!hasCandidates(nextBoard, stone) && !hasCandidates(nextBoard, ns)) {
+                    } else if (!hasCandidates(nextBoard, stone) && !hasCandidates(nextBoard, rs)) {
                         maxScore = Math.max(maxScore, evalScore(nextBoard, stone));
                         ++count;
                     }
@@ -79,13 +79,13 @@ function maxCandidates(board: Board, stone: Stone, depth: number, upper: number)
 }
 
 function minCandidates(board: Board, stone: Stone, depth: number, lower: number): [number, number] {
-    const ns = nextStone(stone);
+    const rs = reverse(stone);
     let count = 0;
     let minScore = MAX_SCORE;
     let nextBoard = cloneBoard(board);
     for (let i = 0; i < 8; ++i) {
         for (let j = 0; j < 8; ++j) {
-            const diff = putStone(nextBoard, ns, i, j);
+            const diff = putStone(nextBoard, rs, i, j);
             if (diff <= 0) continue;
 
             if (depth <= 0) {
@@ -108,7 +108,7 @@ function minCandidates(board: Board, stone: Stone, depth: number, lower: number)
                     count += n2;
                     if (score2 < MAX_SCORE) {
                         minScore = Math.min(minScore, score2);
-                    } else if (!hasCandidates(nextBoard, stone) && !hasCandidates(nextBoard, ns)) {
+                    } else if (!hasCandidates(nextBoard, stone) && !hasCandidates(nextBoard, rs)) {
                         minScore = Math.min(minScore, evalScore(nextBoard, stone));
                         ++count;
                     }

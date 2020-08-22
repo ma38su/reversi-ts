@@ -20,6 +20,37 @@ const dirs = [
 const MAX_SCORE = 8 * 8 + 1;
 const MIN_SCORE = - MAX_SCORE;
 
+function scanCandidates(board: Board, stone: Stone) {
+    const list: Candidate[] = [];
+    for (let y = 0; y < 8; ++y) {
+        for (let x = 0; x < 8; ++x) {
+            if (board[x][y] != E) continue;
+            
+            for (const dir of dirs) {
+                const [dx, dy] = dir;
+                let count = 0;
+                let nx = x;
+                let ny = y;
+                while (true) {
+                    nx += dx;
+                    ny += dy;
+                    if (!contains(nx, ny)) break;
+                    const s = board[nx][ny];
+                    if (s === E) break;
+                    if (s === stone) {
+                        if (count > 0) {
+                            list.push([[x, y], MIN_SCORE, 0]);
+                        }
+                        break;
+                    }
+                    count++;
+                }
+            }
+        }
+    }
+    return list;
+}
+
 function countStones(board: Board, stone: Stone) {
     let score = 0;
     for (let i = 0; i < 8; ++i) {
@@ -72,27 +103,29 @@ function cloneBoard(board: Board) {
     return cloneBoard;
 }
 
-function nextStone(stone: Stone): Stone {
+function reverse(stone: Stone): Stone {
     return (stone * -1) as Stone;
 }
 
-function putStone(board: Board, stone: Stone, i: number, j: number) {
-    if (board[i][j] != E) return 0;
+function putStone(board: Board, stone: Stone, x: number, y: number) {
+    if (board[x][y] != E) return 0;
 
     let diff = 0;
     for (const dir of dirs) {
         const [dx, dy] = dir;
-        let count = 1;
+        let count = 0;
+        let nx = x;
+        let ny = y;
         while (true) {
-            const x = i + dx * count;
-            const y = j + dy * count;
-            if (!contains(x, y)) break;
-            const s = board[x][y];
+            nx += dx;
+            ny += dy;
+            if (!contains(nx, ny)) break;
+            const s = board[nx][ny];
             if (s === E) break;
             if (s === stone) {
-                if (count > 1) {
-                    reverse(board, s, i, j, dx, dy, count);
-                    diff += count - 1;
+                if (count > 0) {
+                    reverseLine(board, s, x, y, dx, dy, count);
+                    diff += count;
                 }
                 break;
             }
@@ -100,7 +133,7 @@ function putStone(board: Board, stone: Stone, i: number, j: number) {
         }
     }
     if (diff > 0) {
-        board[i][j] = stone;
+        board[x][y] = stone;
     }
     return diff;
 }
@@ -109,8 +142,8 @@ function contains(x: number, y: number) {
     return 0 <= x && x < 8 && 0 <= y && y < 8;
 }
 
-function reverse(board: Board, stone: Stone, x: number, y: number, dx: number, dy: number, count: number) {
-    for (let i = 1; i < count; ++i) {
+function reverseLine(board: Board, stone: Stone, x: number, y: number, dx: number, dy: number, count: number) {
+    for (let i = 0; i < count; ++i) {
         x += dx, y += dy;
         board[x][y] = stone;
     }
@@ -159,7 +192,7 @@ export {
     dirs,
     MIN_SCORE, MAX_SCORE,
     Board, Stone, Candidate,
-    newBoard,
-    cloneBoard, nextStone, putStone, hasCandidates,
+    newBoard, scanCandidates,
+    cloneBoard, reverse, putStone, hasCandidates,
     countStones, countTurns, evalScore
 };

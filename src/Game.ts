@@ -4,12 +4,29 @@ import {
     MIN_SCORE, MAX_SCORE,
     Board, Stone, Candidate,
     newBoard, putStone,
-    nextStone, hasCandidates,
+    reverse, hasCandidates,
+    scanCandidates,
     evalScore, countTurns, countStones
 } from './board';
 import { candidateList } from './method/alphabeta';
+import * as MCTS from './method/mcts';
 
 function bestCandidates(board: Board, stone: Stone, depth: number) {
+    let bestPos = null;
+    let maxScore = MIN_SCORE;
+
+    const list = MCTS.candidateList(board, stone);
+    for (const candidate of list) {
+        const [ij, score] = candidate;
+        if (maxScore < score) {
+            maxScore = score;
+            bestPos = ij;
+        }
+    }
+    return bestPos;
+}
+
+function npcBestCandidates(board: Board, stone: Stone, depth: number) {
     let bestPos = null;
     let maxScore = MIN_SCORE;
 
@@ -25,7 +42,7 @@ function bestCandidates(board: Board, stone: Stone, depth: number) {
 }
 
 function npc(board: Board, stone: Stone) {
-    const ns = nextStone(stone);
+    const ns = reverse(stone);
     if (!hasCandidates(board, stone)) {
         alert('NPC must pass.');
         return;
@@ -240,7 +257,7 @@ class Game {
         {
             if (this.stone !== E
                     && !hasCandidates(this.board, this.stone)
-                    && !hasCandidates(this.board, nextStone(this.stone))) {
+                    && !hasCandidates(this.board, reverse(this.stone))) {
                 this.stone = E;
             }
 
@@ -353,7 +370,7 @@ class Game {
         if (scoreVisible && buttonEnabled) {
             list = candidateList(this.board, ns, this.searchDepth);
         } else if (buttonEnabled) {
-            list = candidateList(this.board, ns, 0);
+            list = scanCandidates(this.board, ns);
         } else {
             list = [];
         }
@@ -400,18 +417,18 @@ class Game {
                         } else if (score == maxScore) {
                             if (ns === B) {
                                 button.className = 'best-candidate-b';
-                                button.value = ''+ score;
+                                button.value = Math.round(score).toString();
                             } else if (ns === W) {
                                 button.className = 'best-candidate-w';
-                                button.value = ''+ score;
+                                button.value = Math.round(score).toString();
                             }
                         } else {
                             if (ns === B) {
                                 button.className = 'candidate-b';
-                                button.value = ''+ score;
+                                button.value = Math.round(score).toString();
                             } else if (ns === W) {
                                 button.className = 'candidate-w';
-                                button.value = ''+ score;
+                                button.value = Math.round(score).toString();
                             }
                         }
                         button.onclick = () => {
@@ -420,7 +437,7 @@ class Game {
 
                             this.updateBoard(false, false);
 
-                            const ns = nextStone(this.stone);
+                            const ns = reverse(this.stone);
                             if (!hasCandidates(this.board, this.stone)
                                     && !hasCandidates(this.board, ns) ) {
                                 this.stone = E;
