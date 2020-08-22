@@ -15,7 +15,7 @@ function evalUcb1(val: UCB1, nj: number) {
     return x + Math.sqrt(2 * Math.log(n) / nj);
 }
 
-function ucb1(board: Stone[][], stone: Stone) {
+function ucb1(board: Board, stone: Stone) {
     const candidates: [[number, number], UCB1][] = [];
     let nextBoard = cloneBoard(board);
     for (let i = 0; i < 8; ++i) {
@@ -50,7 +50,7 @@ function ucb1(board: Stone[][], stone: Stone) {
     return list;
 }
 
-function choice(board: Stone[][], stone: Stone, candidates: [[number, number], UCB1][], i: number) {
+function choice(board: Board, stone: Stone, candidates: [[number, number], UCB1][], i: number) {
     const [ij, ucb] = candidates[i];
 
     const score = playout(board, stone);
@@ -58,6 +58,6 @@ function choice(board: Stone[][], stone: Stone, candidates: [[number, number], U
     ucb.x += score;
 }
 
-function playout(board: Stone[][], stone: Stone) {
+function playout(board: Board, stone: Stone) {
     return evalScore(board, stone);
 }

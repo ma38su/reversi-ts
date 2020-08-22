@@ -4,7 +4,7 @@ import {
     cloneBoard, nextStone, putStone, hasCandidates, evalScore
 } from '../board';
 
-function candidateList(board: Stone[][], stone: Stone, depth: number): Candidate[] {
+function candidateList(board: Board, stone: Stone, depth: number): Candidate[] {
     const ns = nextStone(stone);
     const list: Candidate[] = [];
     let nextBoard = cloneBoard(board);
@@ -34,7 +34,7 @@ function candidateList(board: Stone[][], stone: Stone, depth: number): Candidate
     return list;
 }
 
-function maxCandidates(board: Stone[][], stone: Stone, depth: number, upper: number): [number, number] {
+function maxCandidates(board: Board, stone: Stone, depth: number, upper: number): [number, number] {
     const ns = nextStone(stone);
     let count = 0;
     let maxScore = MIN_SCORE;
@@ -60,8 +60,10 @@ function maxCandidates(board: Stone[][], stone: Stone, depth: number, upper: num
                     maxScore = Math.max(maxScore, score);
                 } else {
                     const [score2, n2] = maxCandidates(
-                            nextBoard, stone, depth - 1, MAX_SCORE);
+                            nextBoard, stone, depth - 1, upper);
                     count += n2;
+                    if (score2 > upper)
+                        return [score2, count];
                     if (score2 > MIN_SCORE) {
                         maxScore = Math.max(maxScore, score2);
                     } else if (!hasCandidates(nextBoard, stone) && !hasCandidates(nextBoard, ns)) {
@@ -76,7 +78,7 @@ function maxCandidates(board: Stone[][], stone: Stone, depth: number, upper: num
     return [maxScore, count];
 }
 
-function minCandidates(board: Stone[][], stone: Stone, depth: number, lower: number): [number, number] {
+function minCandidates(board: Board, stone: Stone, depth: number, lower: number): [number, number] {
     const ns = nextStone(stone);
     let count = 0;
     let minScore = MAX_SCORE;
@@ -102,7 +104,7 @@ function minCandidates(board: Stone[][], stone: Stone, depth: number, lower: num
                     minScore = Math.min(minScore, score);
                 } else {
                     const [score2, n2] = minCandidates(
-                            nextBoard, stone, depth - 1, MIN_SCORE);
+                            nextBoard, stone, depth - 1, lower);
                     count += n2;
                     if (score2 < MAX_SCORE) {
                         minScore = Math.min(minScore, score2);

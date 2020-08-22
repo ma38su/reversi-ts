@@ -1,10 +1,10 @@
 import {
     MIN_SCORE, MAX_SCORE,
-    Stone, Candidate, 
+    Board, Stone, Candidate, 
     cloneBoard, nextStone, putStone, hasCandidates, evalScore
 } from '../board';
 
-function candidateList(board: Stone[][], stone: Stone, depth: number): Candidate[] {
+function candidateList(board: Board, stone: Stone, depth: number): Candidate[] {
     const ns = nextStone(stone);
     const list: Candidate[] = [];
     let nextBoard = cloneBoard(board);
@@ -34,7 +34,7 @@ function candidateList(board: Stone[][], stone: Stone, depth: number): Candidate
     return list;
 }
 
-function maxCandidates(board: Stone[][], stone: Stone, depth: number) {
+function maxCandidates(board: Board, stone: Stone, depth: number) {
     const ns = nextStone(stone);
     let count = 0;
     let maxScore = MIN_SCORE;
@@ -72,7 +72,7 @@ function maxCandidates(board: Stone[][], stone: Stone, depth: number) {
     return [maxScore, count];
 }
 
-function minCandidates(board: Stone[][], stone: Stone, depth: number) {
+function minCandidates(board: Board, stone: Stone, depth: number) {
     const ns = nextStone(stone);
     let count = 0;
     let minScore = MAX_SCORE;

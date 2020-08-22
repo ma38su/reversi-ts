@@ -3,6 +3,7 @@ const W = -1
 const E = 0;
 
 type Stone = -1 | 0 | 1;
+type Board = Stone[][];
 type Candidate = [[number, number], number, number]
 
 const dirs = [
@@ -19,7 +20,7 @@ const dirs = [
 const MAX_SCORE = 8 * 8 + 1;
 const MIN_SCORE = - MAX_SCORE;
 
-function countStones(board: Stone[][], stone: Stone) {
+function countStones(board: Board, stone: Stone) {
     let score = 0;
     for (let i = 0; i < 8; ++i) {
         for (let j = 0; j < 8; ++j) {
@@ -31,7 +32,7 @@ function countStones(board: Stone[][], stone: Stone) {
     return score;
 }
 
-function countTurns(board: Stone[][]) {
+function countTurns(board: Board) {
     let score = 0;
     for (let i = 0; i < 8; ++i) {
         for (let j = 0; j < 8; ++j) {
@@ -43,7 +44,7 @@ function countTurns(board: Stone[][]) {
     return score - 3;
 }
 
-function evalScore(board: Stone[][], stone: Stone) {
+function evalScore(board: Board, stone: Stone) {
     let score = 0;
     for (let i = 0; i < 8; ++i) {
         for (let j = 0; j < 8; ++j) {
@@ -58,8 +59,8 @@ function evalScore(board: Stone[][], stone: Stone) {
     return score;
 }
 
-function cloneBoard(board: Stone[][]) {
-    const cloneBoard: Stone[][] = new Array(8);
+function cloneBoard(board: Board) {
+    const cloneBoard: Board = new Array(8);
     for (let i = 0; i < 8; ++i) {
         const row = board[i];
         const cloneRow = new Array(8);
@@ -75,7 +76,7 @@ function nextStone(stone: Stone): Stone {
     return (stone * -1) as Stone;
 }
 
-function putStone(board: Stone[][], stone: Stone, i: number, j: number) {
+function putStone(board: Board, stone: Stone, i: number, j: number) {
     if (board[i][j] != E) return 0;
 
     let diff = 0;
@@ -108,14 +109,14 @@ function contains(x: number, y: number) {
     return 0 <= x && x < 8 && 0 <= y && y < 8;
 }
 
-function reverse(board: Stone[][], stone: Stone, x: number, y: number, dx: number, dy: number, count: number) {
+function reverse(board: Board, stone: Stone, x: number, y: number, dx: number, dy: number, count: number) {
     for (let i = 1; i < count; ++i) {
         x += dx, y += dy;
         board[x][y] = stone;
     }
 }
 
-function hasCandidates(board: Stone[][], stone: Stone) {
+function hasCandidates(board: Board, stone: Stone) {
     for (let i = 0; i < 8; ++i) {
         for (let j = 0; j < 8; ++j) {
             if (board[i][j] != E) continue;
@@ -142,7 +143,7 @@ function hasCandidates(board: Stone[][], stone: Stone) {
 }
 
 function newBoard() {
-    const board: Stone[][] = new Array(8);
+    const board: Board = new Array(8);
     for (let i = 0; i < board.length; ++i) {
         board[i] = new Array(8).fill(E);
     }
@@ -157,7 +158,7 @@ export {
     E, B, W,
     dirs,
     MIN_SCORE, MAX_SCORE,
-    Stone, Candidate,
+    Board, Stone, Candidate,
     newBoard,
     cloneBoard, nextStone, putStone, hasCandidates,
     countStones, countTurns, evalScore

@@ -2,14 +2,14 @@ import {
     E, B, W,
     dirs,
     MIN_SCORE, MAX_SCORE,
-    Stone, Candidate,
+    Board, Stone, Candidate,
     newBoard, putStone,
     nextStone, hasCandidates,
     evalScore, countTurns, countStones
 } from './board';
 import { candidateList } from './method/alphabeta';
 
-function bestCandidates(board: Stone[][], stone: Stone, depth: number) {
+function bestCandidates(board: Board, stone: Stone, depth: number) {
     let bestPos = null;
     let maxScore = MIN_SCORE;
 
@@ -24,7 +24,7 @@ function bestCandidates(board: Stone[][], stone: Stone, depth: number) {
     return bestPos;
 }
 
-function npc(board: Stone[][], stone: Stone) {
+function npc(board: Board, stone: Stone) {
     const ns = nextStone(stone);
     if (!hasCandidates(board, stone)) {
         alert('NPC must pass.');
@@ -49,7 +49,7 @@ function npc(board: Stone[][], stone: Stone) {
     }
 }
 
-function alertGameResult(board: Stone[][], stone: Stone) {
+function alertGameResult(board: Board, stone: Stone) {
     setTimeout(() => {
         const score = evalScore(board, stone);
         if (score == 0) {
@@ -71,7 +71,7 @@ class Game {
     scoreVisible: boolean = false;
 
     stone: Stone;
-    board: Stone[][];
+    board: Board;
 
     div: HTMLDivElement;
 
