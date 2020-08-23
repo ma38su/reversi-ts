@@ -28,27 +28,34 @@ function scanCandidates(board: Board, stone: Stone) {
             
             for (const dir of dirs) {
                 const [dx, dy] = dir;
-                let count = 0;
-                let nx = x;
-                let ny = y;
-                while (true) {
-                    nx += dx;
-                    ny += dy;
-                    if (!contains(nx, ny)) break;
-                    const s = board[nx][ny];
-                    if (s === E) break;
-                    if (s === stone) {
-                        if (count > 0) {
-                            list.push([[x, y], MIN_SCORE, 0]);
-                        }
-                        break;
-                    }
-                    count++;
+                if (reversable(board, stone, x, y, dx, dy)) {
+                    list.push([[x, y], MIN_SCORE, 0]);
+                    break;
                 }
             }
         }
     }
     return list;
+}
+
+function reversable(board: Board, stone: Stone, x: number, y: number, dx: number, dy: number) {
+    const rs = reverse(stone);
+    let count = 0;
+    let nx = x;
+    let ny = y;
+    while (true) {
+        nx += dx;
+        ny += dy;
+        if (!contains(nx, ny)) break;
+        const s = board[nx][ny];
+        if (s === rs) {
+            count++;
+            continue;
+        }
+        if (s === stone && count > 0) return true;
+        break;
+    }
+    return false;
 }
 
 function countStones(board: Board, stone: Stone) {

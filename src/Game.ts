@@ -27,18 +27,23 @@ function bestCandidates(board: Board, stone: Stone, depth: number) {
 }
 
 function npcBestCandidates(board: Board, stone: Stone, depth: number) {
-    let bestPos = null;
     let maxScore = MIN_SCORE;
 
-    const list = candidateList(board, stone, depth);
-    for (const candidate of list) {
+    let list = [];
+
+    const candidates = candidateList(board, stone, depth);
+    for (const candidate of candidates) {
         const [ij, score] = candidate;
         if (maxScore < score) {
             maxScore = score;
-            bestPos = ij;
+            list = [];
+            list.push(ij);
+        } else if (maxScore == score) {
+            list.push(ij);
         }
     }
-    return bestPos;
+    const index = Math.floor(Math.random() * list.length);
+    return list[index];
 }
 
 function npc(board: Board, stone: Stone) {
@@ -48,7 +53,7 @@ function npc(board: Board, stone: Stone) {
         return;
     }
     while (true) {
-        const ij = bestCandidates(board, stone, 5);
+        const ij = npcBestCandidates(board, stone, 5);
         if (!ij) {
             alert("illegal state 1");
             return;
@@ -366,9 +371,15 @@ class Game {
     
         const ns = this.stone;
 
+        const mctsEnabled = true;
+
         let list: Candidate[];
         if (scoreVisible && buttonEnabled) {
-            list = candidateList(this.board, ns, this.searchDepth);
+            if (mctsEnabled) {
+                list = MCTS.candidateList(this.board, ns);
+            } else {
+                list = candidateList(this.board, ns, this.searchDepth);
+            }
         } else if (buttonEnabled) {
             list = scanCandidates(this.board, ns);
         } else {
@@ -417,10 +428,10 @@ class Game {
                         } else if (score == maxScore) {
                             if (ns === B) {
                                 button.className = 'best-candidate-b';
-                                button.value = Math.round(score).toString();
+                                button.value = Math.round(score * 10).toString();
                             } else if (ns === W) {
                                 button.className = 'best-candidate-w';
-                                button.value = Math.round(score).toString();
+                                button.value = Math.round(score * 10).toString();
                             }
                         } else {
                             if (ns === B) {

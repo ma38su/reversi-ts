@@ -1,11 +1,17 @@
 import {
-    MIN_SCORE, MAX_SCORE,
     Board, Stone, Candidate, 
     scanCandidates,
-    cloneBoard, reverse, putStone, hasCandidates, evalScore
+    cloneBoard, reverse, putStone, evalScore
 } from '../board';
 
-import * as AlphaBeta from './alphabeta';
+interface GameNode {
+    board: Board;
+    nodes: GameNode[];
+    x: number,
+    y: number,
+    score: number;
+    n: number;
+}
 
 function evalUcb1(node: GameNode, n: number) {
     const x = node.score;
@@ -33,31 +39,8 @@ function playout(board: Board, stone: Stone) {
     }
 }
 
-function choice(board: Board, stone: Stone, candidates: Candidate[], i: number) {
-    const candidate = candidates[i];
-    const [x, y] = candidate[0];
-
-    let nextBoard = cloneBoard(board);
-    const diff = putStone(nextBoard, stone, x, y);
-    if (diff <= 0) throw new Error();
-
-    playout(nextBoard, stone);
-    const score = evalScore(nextBoard, stone);
-
-    candidate[1] += score;
-    ++candidate[2];
-}
-
-interface GameNode {
-    board: Board;
-    nodes: GameNode[];
-    x: number,
-    y: number,
-    score: number;
-    n: number;
-}
-
 function gameNode(board: Board, stone: Stone) {
+    console.log('extract');
     const candidates = scanCandidates(board, stone);
 
     const nodes: GameNode[] = [];
@@ -84,8 +67,9 @@ function gameNode(board: Board, stone: Stone) {
 }
 
 function choiceNode(nodes: GameNode[], stone: Stone, n: number) {
+    const stone0 = stone;
     const footprints = [];
-    const threshold = 10;
+    const threshold = 4;
     while (nodes.length > 0) {
         let maxScore = Number.NEGATIVE_INFINITY;
         let index = -1;
@@ -113,26 +97,39 @@ function choiceNode(nodes: GameNode[], stone: Stone, n: number) {
 
     const playBoard = cloneBoard(node.board);
     playout(playBoard, stone);
-    const score = evalScore(playBoard, stone);
+    const score = evalScore(playBoard, stone0);
     for (const n of footprints) {
         n.score += score;
-        n.n++;
+        ++n.n;
     }
 }
+
+const loops = 5000;
 
 function candidateList(board: Board, stone: Stone): Candidate[] {
     const nodes = gameNode(board, stone);
 
-    let n = nodes.length;
-    for (let j = 0; j < 10000; ++j) {
-        choiceNode(nodes, stone, n);
-        ++n;
+    nodes.sort((a, b) => {
+        const dx = a.x - b.x;
+        if (dx !== 0) return dx;
+        return a.y - b.y;
+    });
+
+    for (const node of nodes) {
+        console.log('n0', node.x, node.y, node.n, node.score / node.x);
     }
 
+    let n = nodes.length;
+    for (let j = 0; j < loops; ++j) {
+        choiceNode(nodes, reverse(stone), n++);
+    }
+
+    let s = 0;
     const candidates: Candidate[] = [];
     for (const node of nodes) {
-        const ucb1 = evalUcb1(node, n);
-        candidates.push([[node.x, node.y], ucb1, n]);
+        candidates.push([[node.x, node.y], node.n, n]);
+        s += node.n;
+        console.log('n1', node.x, node.y, node.n, node.score / node.x);
     }
     return candidates;
 }
