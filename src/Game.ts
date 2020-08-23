@@ -1,6 +1,5 @@
 import {
     E, B, W,
-    dirs,
     MIN_SCORE, MAX_SCORE,
     Board, Stone, Candidate,
     newBoard, putStone,
@@ -12,7 +11,7 @@ import * as AlphaBeta from './method/alphabeta';
 import * as MCTS from './method/mcts';
 import * as Greedy from './method/greedy';
 
-const version = '0.1';
+const version = '0.1.1';
 
 function bestCandidates(board: Board, stone: Stone, algorithm: string) {
     let maxScore = MIN_SCORE;
@@ -20,13 +19,11 @@ function bestCandidates(board: Board, stone: Stone, algorithm: string) {
     let candidates: Candidate[];
     switch (algorithm) {
         case 'mcts': {
-            const loops: number = 10000;
-            candidates = MCTS.candidateList(board, stone, loops);
+            candidates = MCTS.candidateList(board, stone);
             break;
         }
         case 'alphabeta': {
-            const depth: number = 5;
-            candidates = AlphaBeta.candidateList(board, stone, depth);
+            candidates = AlphaBeta.candidateList(board, stone);
             break;
         }
         case 'greedy': {
@@ -94,14 +91,11 @@ function alertGameResult(board: Board, stone: Stone) {
 
 class Game {
 
-    //scoringAlgorithm: string = 'alphabeta';
     scoringAlgorithm: string = 'mcts';
     npcAlgorithm: string = 'mcts';
 
-    yourStone: Stone = B;
-    npcEnabled: boolean = true;
+    npcLightEnabled: boolean = true;
 
-    searchDepth: number = 5;
     scoreVisible: boolean = false;
 
     stone: Stone;
@@ -203,12 +197,12 @@ class Game {
             checkbox.type = 'checkbox';
             checkbox.onchange = () => {
                 if (checkbox.checked) {
-                    this.npcEnabled = true;
+                    this.npcLightEnabled = true;
                 } else {
-                    this.npcEnabled = false;
+                    this.npcLightEnabled = false;
                 }
             };
-            checkbox.checked = this.npcEnabled;
+            checkbox.checked = this.npcLightEnabled;
             checkbox.className = 'control';
 
             const td = document.createElement('td');
@@ -404,23 +398,18 @@ class Game {
     }
 
     createBoardDom(buttonEnabled: boolean, scoreVisible: boolean) {
-        const yourStone = this.yourStone;
         const table = document.createElement("table");
         table.className = 'board';
     
         const s = this.stone;
 
-        const mctsEnabled = true;
-
         let list: Candidate[];
         if (scoreVisible && buttonEnabled) {
             console.log('scoring', this.scoringAlgorithm);
             if (this.scoringAlgorithm === 'mcts') {
-                const loops = 10000;
-                list = MCTS.candidateList(this.board, s, loops);
+                list = MCTS.candidateList(this.board, s);
             } else if (this.scoringAlgorithm === 'alphabeta') {
-                const depth = 5;
-                list = AlphaBeta.candidateList(this.board, s, depth);
+                list = AlphaBeta.candidateList(this.board, s);
             } else if (this.scoringAlgorithm === 'greedy') {
                 list = Greedy.candidateList(this.board, s);
             } else {
@@ -498,18 +487,18 @@ class Game {
                             if (!hasCandidates(this.board, this.stone)
                                     && !hasCandidates(this.board, ns) ) {
                                 this.stone = E;
-                                alertGameResult(this.board, yourStone);
+                                alertGameResult(this.board, s);
                                 return;
                             }
 
                             this.updateBoard(false, false);
 
                             setTimeout(() => {
-                                if (this.npcEnabled) {
+                                if (this.npcLightEnabled) {
                                     npc(this.board, ns, this.npcAlgorithm);
                                     if (!hasCandidates(this.board, this.stone)) {
                                         this.stone = E;
-                                        alertGameResult(this.board, yourStone);
+                                        alertGameResult(this.board, s);
                                     }
                                 } else {
                                     if (hasCandidates(this.board, ns)) {

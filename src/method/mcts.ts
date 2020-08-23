@@ -4,7 +4,7 @@
 import {
     Board, Stone, Candidate, 
     scanCandidates,
-    cloneBoard, reverse, putStone, evalScore, countTurns
+    cloneBoard, reverse, putStone, evalScore, countTurns, MAX_SCORE
 } from '../board';
 
 import * as AlphaBeta from './alphabeta';
@@ -19,6 +19,16 @@ interface GameNode {
     n: number;
 }
 
+function evalReward(board: Board, stone: Stone) {
+    const score = evalScore(board, stone);
+    if (score > 0) {
+        return Math.log(score) / Math.log(MAX_SCORE);
+    } else if (score < 0) {
+        return -Math.log(-score) / Math.log(MAX_SCORE);
+    }
+    return 0;
+}
+
 function evalUcb1(node: GameNode, n: number) {
     const x = node.score;
     const nj = node.n;
@@ -27,7 +37,7 @@ function evalUcb1(node: GameNode, n: number) {
 
 function playout(board: Board, stone: Stone) {
     let candidates = scanCandidates(board, stone);
-    if (candidates.length == 0) {
+    if (candidates.length === 0) {
         stone = reverse(stone);
         candidates = scanCandidates(board, stone);
     }
@@ -61,7 +71,7 @@ function gameNode(board: Board, stone: Stone) {
 
         const playBoard = cloneBoard(nextBoard);
         playout(playBoard, stone);
-        const score = evalScore(nextBoard, stone);
+        const score = evalReward(nextBoard, stone);
 
         nodes.push({
             board: nextBoard,
@@ -76,13 +86,12 @@ function gameNode(board: Board, stone: Stone) {
     return nodes;
 }
 
-function choiceNode(nodes: GameNode[], stone: Stone) {
-    if (nodes.length == 0) throw new Error();
+function choiceNode(nodes: GameNode[], stone: Stone, threshold: number) {
+    if (nodes.length === 0) throw new Error();
  
     const stone0 = stone;
 
     const footprints = [];
-    const threshold = 4;
     while (nodes.length > 0) {
 
         let index = -1;
@@ -116,7 +125,7 @@ function choiceNode(nodes: GameNode[], stone: Stone) {
 
         stone = node.stone;
         nodes = node.nodes;
-        if (nodes.length == 0 && node.n > threshold) {
+        if (nodes.length === 0 && node.n > threshold) {
             node.nodes = gameNode(node.board, stone);
             if (node.nodes.length == 0) {
                 stone = reverse(stone);
@@ -131,36 +140,28 @@ function choiceNode(nodes: GameNode[], stone: Stone) {
     const node = footprints[footprints.length - 1];
     const playBoard = cloneBoard(node.board);
     playout(playBoard, stone);
-    const score = evalScore(playBoard, stone0);
+    const score = evalReward(playBoard, stone0);
     for (const n of footprints) {
         n.score += score;
         ++n.n;
     }
 }
 
-function candidateList(board: Board, stone: Stone, loops: number): Candidate[] {
+function candidateList(board: Board, stone: Stone, loops: number = 10000, threshold: number = 4): Candidate[] {
     const nodes = gameNode(board, stone);
-    if (nodes.length == 0) {
+    if (nodes.length === 0) {
         return [];        
     }
 
     const turns = countTurns(board);
-    if (turns == 1) {
+    if (turns === 1) {
         return AlphaBeta.candidateList(board, stone, 0);
     }
-    if (64 - turns <= 5) {
-        console.log('algorithm -> alpha-beta');
+    if (64 - turns < 5) {
         return AlphaBeta.candidateList(board, stone, 5);
     }
-
-    nodes.sort((a, b) => {
-        const dx = a.x - b.x;
-        if (dx !== 0) return dx;
-        return a.y - b.y;
-    });
-
     for (let j = 0; j < loops; ++j) {
-        choiceNode(nodes, stone);
+        choiceNode(nodes, stone, threshold);
     }
 
     let s = 0;

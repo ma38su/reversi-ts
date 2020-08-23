@@ -7,7 +7,7 @@ import {
     cloneBoard, reverse, putStone, hasCandidates, evalScore
 } from '../board';
 
-function candidateList(board: Board, stone: Stone, depth: number): Candidate[] {
+function candidateList(board: Board, stone: Stone, depth: number = 5): Candidate[] {
     const rs = reverse(stone);
     const list: Candidate[] = [];
     let nextBoard = cloneBoard(board);
