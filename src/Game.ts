@@ -11,26 +11,19 @@ import {
 import { candidateList } from './method/alphabeta';
 import * as MCTS from './method/mcts';
 
-function bestCandidates(board: Board, stone: Stone, depth: number) {
-    let bestPos = null;
-    let maxScore = MIN_SCORE;
-
-    const list = MCTS.candidateList(board, stone);
-    for (const candidate of list) {
-        const [ij, score] = candidate;
-        if (maxScore < score) {
-            maxScore = score;
-            bestPos = ij;
-        }
-    }
-    return bestPos;
-}
-
 function npcBestCandidates(board: Board, stone: Stone, algorithm: string) {
-    const depth: number = 5;
     let maxScore = MIN_SCORE;
     let list = [];
-    const candidates = candidateList(board, stone, depth);
+    let candidates: Candidate[];
+    if (algorithm === 'mcts') {
+        const loops: number = 10000;
+        candidates = MCTS.candidateList(board, stone, loops);
+    } else if (algorithm === 'alphabeta') {
+        const depth: number = 5;
+        candidates = candidateList(board, stone, depth);
+    } else {
+        throw new Error();
+    }
     for (const candidate of candidates) {
         const [ij, score] = candidate;
         if (maxScore < score) {
@@ -399,9 +392,11 @@ class Game {
         if (scoreVisible && buttonEnabled) {
             console.log('scoring', this.scoringAlgorithm);
             if (this.scoringAlgorithm === 'mcts') {
-                list = MCTS.candidateList(this.board, s);
+                const loops = 10000;
+                list = MCTS.candidateList(this.board, s, loops);
             } else if (this.scoringAlgorithm === 'alphabeta') {
-                list = candidateList(this.board, s, this.searchDepth);
+                const depth = 5;
+                list = candidateList(this.board, s, depth);
             } else {
                 throw new Error('algorithm: '+ this.scoringAlgorithm);
             }

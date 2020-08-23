@@ -138,9 +138,7 @@ function choiceNode(nodes: GameNode[], stone: Stone) {
     }
 }
 
-const loops = 20000;
-
-function candidateList(board: Board, stone: Stone): Candidate[] {
+function candidateList(board: Board, stone: Stone, loops: number): Candidate[] {
     const nodes = gameNode(board, stone);
     if (nodes.length == 0) {
         return [];        
