@@ -1,5 +1,5 @@
 /**
- * Monte Carlo tree search (MCTS)
+ * Greedy
  */
 import {
     Board, Stone, Candidate, 
@@ -18,13 +18,7 @@ function candidateList(board: Board, stone: Stone): Candidate[] {
             const diff = putStone(nextBoard, stone, i, j);
             if (diff <= 0) continue;
 
-            if (maxDiff < diff) {
-                maxDiff = diff;
-                list = [];
-                list.push([[i, j], diff, 1]);
-            } else if (maxDiff === diff) {
-                list.push([[i, j], diff, 1]);
-            }
+            list.push([[i, j], diff, 1]);
             nextBoard = cloneBoard(board);
         }
     }

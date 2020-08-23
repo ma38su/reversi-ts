@@ -24,7 +24,7 @@ function scanCandidates(board: Board, stone: Stone) {
     const list: Candidate[] = [];
     for (let y = 0; y < 8; ++y) {
         for (let x = 0; x < 8; ++x) {
-            if (board[x][y] != E) continue;
+            if (board[x][y] !== E) continue;
             
             for (const dir of dirs) {
                 const [dx, dy] = dir;
@@ -62,7 +62,7 @@ function countStones(board: Board, stone: Stone) {
     let score = 0;
     for (let i = 0; i < 8; ++i) {
         for (let j = 0; j < 8; ++j) {
-            if (board[i][j] == stone) {
+            if (board[i][j] === stone) {
                 ++score;
             }
         }
@@ -115,7 +115,7 @@ function reverse(stone: Stone): Stone {
 }
 
 function putStone(board: Board, stone: Stone, x: number, y: number) {
-    if (board[x][y] != E) return 0;
+    if (board[x][y] !== E) return 0;
 
     let diff = 0;
     for (const dir of dirs) {
@@ -159,7 +159,7 @@ function reverseLine(board: Board, stone: Stone, x: number, y: number, dx: numbe
 function hasCandidates(board: Board, stone: Stone) {
     for (let i = 0; i < 8; ++i) {
         for (let j = 0; j < 8; ++j) {
-            if (board[i][j] != E) continue;
+            if (board[i][j] !== E) continue;
             
             for (const dir of dirs) {
                 const [dx, dy] = dir;

@@ -14,20 +14,27 @@ import * as Greedy from './method/greedy';
 
 const version = '0.1';
 
-function npcBestCandidates(board: Board, stone: Stone, algorithm: string) {
+function bestCandidates(board: Board, stone: Stone, algorithm: string) {
     let maxScore = MIN_SCORE;
     let list = [];
     let candidates: Candidate[];
-    if (algorithm === 'mcts') {
-        const loops: number = 10000;
-        candidates = MCTS.candidateList(board, stone, loops);
-    } else if (algorithm === 'alphabeta') {
-        const depth: number = 5;
-        candidates = AlphaBeta.candidateList(board, stone, depth);
-    } else if (algorithm === 'mcts') {
-        candidates = Greedy.candidateList(board, stone);
-    } else {
-        throw new Error();
+    switch (algorithm) {
+        case 'mcts': {
+            const loops: number = 10000;
+            candidates = MCTS.candidateList(board, stone, loops);
+            break;
+        }
+        case 'alphabeta': {
+            const depth: number = 5;
+            candidates = AlphaBeta.candidateList(board, stone, depth);
+            break;
+        }
+        case 'greedy': {
+            candidates = Greedy.candidateList(board, stone);
+            break;
+        }
+        default:
+            throw new Error();
     }
     for (const candidate of candidates) {
         const [ij, score] = candidate;
@@ -39,9 +46,7 @@ function npcBestCandidates(board: Board, stone: Stone, algorithm: string) {
             list.push(ij);
         }
     }
-
-    const index = Math.floor(Math.random() * list.length);
-    return list[index];
+    return list;
 }
 
 function npc(board: Board, stone: Stone, algorithm: string) {
@@ -53,14 +58,17 @@ function npc(board: Board, stone: Stone, algorithm: string) {
         return;
     }
     while (true) {
-        const ij = npcBestCandidates(board, stone, algorithm);
-        if (!ij) {
+        const list = bestCandidates(board, stone, algorithm);
+        const index = Math.floor(Math.random() * list.length);
+        const xy = list[index];
+
+        if (xy == null) {
             alert("illegal state 1");
             return;
         }
 
-        const [i, j] = ij;
-        const diff1 = putStone(board, stone, i, j);
+        const [x, y] = xy;
+        const diff1 = putStone(board, stone, x, y);
         if (diff1 <= 0) {
             alert("illegal state 2");
         }
