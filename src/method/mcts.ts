@@ -1,8 +1,13 @@
+/**
+ * Monte Carlo tree search (MCTS)
+ */
 import {
     Board, Stone, Candidate, 
     scanCandidates,
-    cloneBoard, reverse, putStone, evalScore
+    cloneBoard, reverse, putStone, evalScore, countTurns
 } from '../board';
+
+import * as AlphaBeta from './alphabeta';
 
 interface GameNode {
     board: Board;
@@ -40,7 +45,6 @@ function playout(board: Board, stone: Stone) {
 }
 
 function gameNode(board: Board, stone: Stone) {
-    console.log('extract');
     const candidates = scanCandidates(board, stone);
 
     const nodes: GameNode[] = [];
@@ -66,18 +70,40 @@ function gameNode(board: Board, stone: Stone) {
     return nodes;
 }
 
-function choiceNode(nodes: GameNode[], stone: Stone, n: number) {
+function choiceNode(nodes: GameNode[], stone: Stone) {
+    if (nodes.length == 0) throw new Error();
+ 
     const stone0 = stone;
+
     const footprints = [];
     const threshold = 4;
     while (nodes.length > 0) {
-        let maxScore = Number.NEGATIVE_INFINITY;
+        stone = reverse(stone);
+
         let index = -1;
+
+        let n = 0;
         for (let i = 0; i < nodes.length; ++i) {
-            const score = evalUcb1(nodes[i], n);
-            if (maxScore < score) {
-                maxScore = score;
-                index = i;
+            n += nodes[i].n;
+        }
+
+        if (stone === stone0) {
+            let maxScore = Number.NEGATIVE_INFINITY;
+            for (let i = 0; i < nodes.length; ++i) {
+                const score = evalUcb1(nodes[i], n);
+                if (maxScore < score) {
+                    maxScore = score;
+                    index = i;
+                }
+            }
+        } else {
+            let minScore = Number.POSITIVE_INFINITY;
+            for (let i = 0; i < nodes.length; ++i) {
+                const score = evalUcb1(nodes[i], n);
+                if (minScore > score) {
+                    minScore = score;
+                    index = i;
+                }
             }
         }
         if (index < 0) throw new Error();
@@ -94,7 +120,6 @@ function choiceNode(nodes: GameNode[], stone: Stone, n: number) {
     }
 
     const node = footprints[footprints.length - 1];
-
     const playBoard = cloneBoard(node.board);
     playout(playBoard, stone);
     const score = evalScore(playBoard, stone0);
@@ -108,6 +133,15 @@ const loops = 5000;
 
 function candidateList(board: Board, stone: Stone): Candidate[] {
     const nodes = gameNode(board, stone);
+    if (nodes.length == 0) {
+        return [];        
+    }
+
+    const turns = countTurns(board);
+    if (64 - turns <= 5) {
+        console.log('algorithm -> alpha-beta');
+        return AlphaBeta.candidateList(board, stone, 5);
+    }
 
     nodes.sort((a, b) => {
         const dx = a.x - b.x;
@@ -115,21 +149,16 @@ function candidateList(board: Board, stone: Stone): Candidate[] {
         return a.y - b.y;
     });
 
-    for (const node of nodes) {
-        console.log('n0', node.x, node.y, node.n, node.score / node.x);
-    }
-
-    let n = nodes.length;
     for (let j = 0; j < loops; ++j) {
-        choiceNode(nodes, reverse(stone), n++);
+        choiceNode(nodes, stone);
     }
 
     let s = 0;
     const candidates: Candidate[] = [];
     for (const node of nodes) {
-        candidates.push([[node.x, node.y], node.n, n]);
+        candidates.push([[node.x, node.y], node.score / node.n, node.n]);
         s += node.n;
-        console.log('n1', node.x, node.y, node.n, node.score / node.x);
+        console.log('n1', node.x, node.y, node.n, node.score / node.n);
     }
     return candidates;
 }

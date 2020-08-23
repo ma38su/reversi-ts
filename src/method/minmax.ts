@@ -1,3 +1,6 @@
+/**
+ * Monte Carlo tree search (MCTS)
+ */
 import {
     MIN_SCORE, MAX_SCORE,
     Board, Stone, Candidate, 

@@ -26,11 +26,10 @@ function bestCandidates(board: Board, stone: Stone, depth: number) {
     return bestPos;
 }
 
-function npcBestCandidates(board: Board, stone: Stone, depth: number) {
+function npcBestCandidates(board: Board, stone: Stone, algorithm: string) {
+    const depth: number = 5;
     let maxScore = MIN_SCORE;
-
     let list = [];
-
     const candidates = candidateList(board, stone, depth);
     for (const candidate of candidates) {
         const [ij, score] = candidate;
@@ -46,14 +45,16 @@ function npcBestCandidates(board: Board, stone: Stone, depth: number) {
     return list[index];
 }
 
-function npc(board: Board, stone: Stone) {
+function npc(board: Board, stone: Stone, algorithm: string) {
+    console.log('npc', algorithm);
+
     const ns = reverse(stone);
     if (!hasCandidates(board, stone)) {
         alert('NPC must pass.');
         return;
     }
     while (true) {
-        const ij = npcBestCandidates(board, stone, 5);
+        const ij = npcBestCandidates(board, stone, algorithm);
         if (!ij) {
             alert("illegal state 1");
             return;
@@ -86,11 +87,15 @@ function alertGameResult(board: Board, stone: Stone) {
 
 class Game {
 
+    //scoringAlgorithm: string = 'alphabeta';
+    scoringAlgorithm: string = 'mcts';
+    npcAlgorithm: string = 'alphabeta';
+
     yourStone: Stone = B;
     npcEnabled: boolean = true;
 
     searchDepth: number = 5;
-    scoreVisible: boolean = false;
+    scoreVisible: boolean = true;
 
     stone: Stone;
     board: Board;
@@ -112,40 +117,11 @@ class Game {
         div.appendChild(this.createBoardDom(buttonEnabled, scoreVisible));
         div.append(this.createInfoDom());
         div.append(this.createScoreDom());
-        div.append(this.controllerDom());
+        div.append(this.createControllerDom());
     }
 
-    controllerDom() {
+    createControllerDom() {
         const table = document.createElement('table');
-        {
-            const tr = document.createElement('tr');
-
-            const label = document.createElement('label');
-            label.innerHTML = 'NPC';
-            label.htmlFor = 'npc-check'; 
-
-            const th = document.createElement('th');
-            th.appendChild(label);
-            tr.appendChild(th);
-
-            const checkbox = document.createElement('input');
-            checkbox.id = 'npc-check';
-            checkbox.type = 'checkbox';
-            checkbox.onchange = () => {
-                if (checkbox.checked) {
-                    this.npcEnabled = true;
-                } else {
-                    this.npcEnabled = false;
-                }
-            };
-            checkbox.checked = this.npcEnabled;
-            checkbox.className = 'control';
-
-            const td = document.createElement('td');
-            td.appendChild(checkbox);
-            tr.appendChild(td);
-            table.appendChild(tr);
-        }
         {
             const tr = document.createElement('tr');
 
@@ -174,45 +150,91 @@ class Game {
             const td = document.createElement('td');
             td.appendChild(checkbox);
             tr.appendChild(td);
-            table.appendChild(tr);
-        }
-        {
-            const tr = document.createElement('tr');
-
-            const label = document.createElement('label');
-            label.innerHTML = 'Depth';
-            label.htmlFor = 'depth-input'; 
-
-            const th = document.createElement('th');
-            th.appendChild(label);
-            tr.appendChild(th);
 
             const select = document.createElement('select');
-            select.id = 'depth'
-            for (let depth of [1, 2, 3, 4, 5, 6, 7, 8]) {
+            select.id = 'score-algorithm'
+            for (const algorithm of ['alphabeta', 'mcts']) {
                 const option = document.createElement('option');
-                option.innerHTML = depth.toString();
-                option.value = depth.toString();
+                option.innerHTML = algorithm.toString();
+                option.value = algorithm.toString();
                 select.appendChild(option);
-                if (this.searchDepth == depth) {
+                if (this.scoringAlgorithm == algorithm) {
                     option.selected = true;
                 }
             }
             select.onchange = () => {
                 for (const opt of select.selectedOptions) {
-                    this.searchDepth = parseInt(opt.value);
+                    this.scoringAlgorithm = opt.value;
                     break;
                 }
-                console.log('search-depth: ', this.searchDepth);
+                console.log('algorithm: ', this.scoringAlgorithm);
                 if (this.scoreVisible) {
                     this.updateBoard(true, this.scoreVisible);
                 }
             };
             select.className = 'control';
 
+            const tdScoring = document.createElement('td');
+            tdScoring.appendChild(select);
+            tr.appendChild(tdScoring);
+
+            table.appendChild(tr);
+        }
+        {
+            const tr = document.createElement('tr');
+
+            const label = document.createElement('label');
+            label.innerHTML = 'NPC';
+            label.htmlFor = 'npc-check'; 
+
+            const th = document.createElement('th');
+            th.appendChild(label);
+            tr.appendChild(th);
+
+            const checkbox = document.createElement('input');
+            checkbox.id = 'npc-check';
+            checkbox.type = 'checkbox';
+            checkbox.onchange = () => {
+                if (checkbox.checked) {
+                    this.npcEnabled = true;
+                } else {
+                    this.npcEnabled = false;
+                }
+            };
+            checkbox.checked = this.npcEnabled;
+            checkbox.className = 'control';
+
             const td = document.createElement('td');
-            td.appendChild(select);
+            td.appendChild(checkbox);
             tr.appendChild(td);
+
+            const select = document.createElement('select');
+            select.id = 'score-algorithm'
+            for (const algorithm of ['alphabeta', 'mcts']) {
+                const option = document.createElement('option');
+                option.innerHTML = algorithm.toString();
+                option.value = algorithm.toString();
+                select.appendChild(option);
+                if (this.npcAlgorithm == algorithm) {
+                    option.selected = true;
+                }
+            }
+            select.onchange = () => {
+                for (const opt of select.selectedOptions) {
+                    this.npcAlgorithm = opt.value;
+                    break;
+                }
+                console.log('algorithm: ', this.npcAlgorithm);
+                if (this.scoreVisible) {
+                    this.updateBoard(true, this.scoreVisible);
+                }
+            };
+            select.className = 'control';
+
+            const tdAlgorithm = document.createElement('td');
+            tdAlgorithm.appendChild(select);
+            tr.appendChild(tdAlgorithm);
+
             table.appendChild(tr);
         }
         {
@@ -369,19 +391,22 @@ class Game {
         const table = document.createElement("table");
         table.className = 'board';
     
-        const ns = this.stone;
+        const s = this.stone;
 
         const mctsEnabled = true;
 
         let list: Candidate[];
         if (scoreVisible && buttonEnabled) {
-            if (mctsEnabled) {
-                list = MCTS.candidateList(this.board, ns);
+            console.log('scoring', this.scoringAlgorithm);
+            if (this.scoringAlgorithm === 'mcts') {
+                list = MCTS.candidateList(this.board, s);
+            } else if (this.scoringAlgorithm === 'alphabeta') {
+                list = candidateList(this.board, s, this.searchDepth);
             } else {
-                list = candidateList(this.board, ns, this.searchDepth);
+                throw new Error('algorithm: '+ this.scoringAlgorithm);
             }
         } else if (buttonEnabled) {
-            list = scanCandidates(this.board, ns);
+            list = scanCandidates(this.board, s);
         } else {
             list = [];
         }
@@ -426,18 +451,18 @@ class Game {
                             button.className = 'candidate';
                             button.value = '';
                         } else if (score == maxScore) {
-                            if (ns === B) {
+                            if (s === B) {
                                 button.className = 'best-candidate-b';
-                                button.value = Math.round(score * 10).toString();
-                            } else if (ns === W) {
+                                button.value = Math.round(score).toString();
+                            } else if (s === W) {
                                 button.className = 'best-candidate-w';
-                                button.value = Math.round(score * 10).toString();
+                                button.value = Math.round(score).toString();
                             }
                         } else {
-                            if (ns === B) {
+                            if (s === B) {
                                 button.className = 'candidate-b';
                                 button.value = Math.round(score).toString();
-                            } else if (ns === W) {
+                            } else if (s === W) {
                                 button.className = 'candidate-w';
                                 button.value = Math.round(score).toString();
                             }
@@ -460,7 +485,7 @@ class Game {
 
                             setTimeout(() => {
                                 if (this.npcEnabled) {
-                                    npc(this.board, ns);
+                                    npc(this.board, ns, this.npcAlgorithm);
                                     if (!hasCandidates(this.board, this.stone)) {
                                         this.stone = E;
                                         alertGameResult(this.board, yourStone);

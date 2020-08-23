@@ -1,3 +1,6 @@
+/**
+ * Alpha–beta pruning
+ */
 import {
     MIN_SCORE, MAX_SCORE,
     Board, Stone, Candidate, 
