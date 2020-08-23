@@ -8,8 +8,11 @@ import {
     scanCandidates,
     evalScore, countTurns, countStones
 } from './board';
-import { candidateList } from './method/alphabeta';
+import * as AlphaBeta from './method/alphabeta';
 import * as MCTS from './method/mcts';
+import * as Greedy from './method/greedy';
+
+const version = '0.1';
 
 function npcBestCandidates(board: Board, stone: Stone, algorithm: string) {
     let maxScore = MIN_SCORE;
@@ -20,7 +23,9 @@ function npcBestCandidates(board: Board, stone: Stone, algorithm: string) {
         candidates = MCTS.candidateList(board, stone, loops);
     } else if (algorithm === 'alphabeta') {
         const depth: number = 5;
-        candidates = candidateList(board, stone, depth);
+        candidates = AlphaBeta.candidateList(board, stone, depth);
+    } else if (algorithm === 'mcts') {
+        candidates = Greedy.candidateList(board, stone);
     } else {
         throw new Error();
     }
@@ -34,6 +39,7 @@ function npcBestCandidates(board: Board, stone: Stone, algorithm: string) {
             list.push(ij);
         }
     }
+
     const index = Math.floor(Math.random() * list.length);
     return list[index];
 }
@@ -82,13 +88,13 @@ class Game {
 
     //scoringAlgorithm: string = 'alphabeta';
     scoringAlgorithm: string = 'mcts';
-    npcAlgorithm: string = 'alphabeta';
+    npcAlgorithm: string = 'mcts';
 
     yourStone: Stone = B;
     npcEnabled: boolean = true;
 
     searchDepth: number = 5;
-    scoreVisible: boolean = true;
+    scoreVisible: boolean = false;
 
     stone: Stone;
     board: Board;
@@ -146,7 +152,7 @@ class Game {
 
             const select = document.createElement('select');
             select.id = 'score-algorithm'
-            for (const algorithm of ['alphabeta', 'mcts']) {
+            for (const algorithm of ['greedy', 'alphabeta', 'mcts']) {
                 const option = document.createElement('option');
                 option.innerHTML = algorithm.toString();
                 option.value = algorithm.toString();
@@ -202,8 +208,8 @@ class Game {
             tr.appendChild(td);
 
             const select = document.createElement('select');
-            select.id = 'score-algorithm'
-            for (const algorithm of ['alphabeta', 'mcts']) {
+            select.id = 'npc-algorithm'
+            for (const algorithm of ['greedy', 'alphabeta', 'mcts']) {
                 const option = document.createElement('option');
                 option.innerHTML = algorithm.toString();
                 option.value = algorithm.toString();
@@ -271,6 +277,11 @@ class Game {
             thTurn.innerHTML = 'Turn';
             tr.appendChild(thTurn);
 
+            const thVersion = document.createElement('th');
+            thVersion.className = 'info';
+            thVersion.innerHTML = 'Version';
+            tr.appendChild(thVersion);
+
             table.appendChild(tr);
         }
 
@@ -302,6 +313,11 @@ class Game {
             const stones = countTurns(this.board);
             tdTurn.innerHTML = (stones - 3).toString();
             tr.appendChild(tdTurn);
+
+            const tdVersion = document.createElement('td');
+            tdVersion.className = 'info';
+            tdVersion.innerHTML = version;
+            tr.appendChild(tdVersion);
 
             table.appendChild(tr);
         }
@@ -396,7 +412,9 @@ class Game {
                 list = MCTS.candidateList(this.board, s, loops);
             } else if (this.scoringAlgorithm === 'alphabeta') {
                 const depth = 5;
-                list = candidateList(this.board, s, depth);
+                list = AlphaBeta.candidateList(this.board, s, depth);
+            } else if (this.scoringAlgorithm === 'greedy') {
+                list = Greedy.candidateList(this.board, s);
             } else {
                 throw new Error('algorithm: '+ this.scoringAlgorithm);
             }
