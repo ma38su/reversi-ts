@@ -9,12 +9,12 @@ https://ma38su.github.io/reversi-ts/
 ### Run Web App
 
 ```
-yarn
-yarn start
+npm install
+npm start
 ```
 
 ### Run NPC vs. NPC
 
 ```
-yarn run ts-node src/match.ts
+npx tsx src/match.ts
 ```
